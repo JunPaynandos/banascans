@@ -1,7 +1,94 @@
-from channels.db import database_sync_to_async
-from .models import Thread, Message
-import json
+# ORIGINAL
+# from channels.db import database_sync_to_async
+# from .models import Thread, Message
+# import json
+# from channels.generic.websocket import AsyncWebsocketConsumer
+
+# class InboxConsumer(AsyncWebsocketConsumer):
+#     async def connect(self):
+#         self.thread_id = self.scope['url_route']['kwargs']['thread_id']
+#         self.thread = await database_sync_to_async(Thread.objects.get)(id=self.thread_id)
+#         self.room_group_name = f'inbox_{self.thread.id}'
+
+#         # Join room group (this group will include both the user and admin)
+#         await self.channel_layer.group_add(
+#             self.room_group_name,
+#             self.channel_name
+#         )
+
+#         # Accept the WebSocket connection
+#         await self.accept()
+
+#     async def disconnect(self, close_code):
+#         # Leave room group
+#         await self.channel_layer.group_discard(
+#             self.room_group_name,
+#             self.channel_name
+#         )
+
+#     async def receive(self, text_data):
+#         text_data_json = json.loads(text_data)
+#         message_content = text_data_json['message']
+#         sender = self.scope['user']
+
+#         # Get the receiver (admin or user based on the sender)
+#         receiver = await self.get_receiver()
+
+#         # Save the message to the database
+#         message = await database_sync_to_async(self.save_message)(sender, receiver, message_content)
+
+#         # Send the message to both the sender and receiver (both user and admin)
+#         await self.channel_layer.group_send(
+#             self.room_group_name,
+#             {
+#                 'type': 'chat_message',
+#                 'message': message.content,
+#                 'sender': message.sender.username,
+#                 'receiver': message.receiver.username,  # Send receiver's username to the frontend
+#                 'sender_image_url': message.sender.image_url.url if message.sender.image_url else None,
+#                 'receiver_image_url': message.receiver.image_url.url if message.receiver.image_url else None,
+#                 'timestamp': message.timestamp.isoformat()
+#             }
+#         )
+
+#     async def chat_message(self, event):
+#         # Send the message to WebSocket
+#         await self.send(text_data=json.dumps({
+#             'message': event['message'],
+#             'sender': event['sender'],
+#             'receiver': event['receiver'],
+#             'sender_image_url': event['sender_image_url'],  # Send sender image URL
+#             'receiver_image_url': event['receiver_image_url'],  # Send receiver image URL
+#             'timestamp': event['timestamp'],
+#         }))
+
+#     # Async method to get the receiver
+#     @database_sync_to_async
+#     def get_receiver(self):
+#         # Determine the receiver based on the current user and thread
+#         if self.scope['user'] == self.thread.user:
+#             return self.thread.admin
+#         else:
+#             return self.thread.user
+
+#     def save_message(self, sender, receiver, content):
+#         # Create the message with both sender and receiver
+#         message = Message.objects.create(
+#             thread=self.thread,
+#             sender=sender,
+#             receiver=receiver,
+#             content=content
+#         )
+#         return message
+
+
+
+# 2
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+import json
+
+from .models import Thread, Message  # now safe here, used inside async methods
 
 class InboxConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -9,41 +96,26 @@ class InboxConsumer(AsyncWebsocketConsumer):
         self.thread = await database_sync_to_async(Thread.objects.get)(id=self.thread_id)
         self.room_group_name = f'inbox_{self.thread.id}'
 
-        # Join room group (this group will include both the user and admin)
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-
-        # Accept the WebSocket connection
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message_content = text_data_json['message']
         sender = self.scope['user']
-
-        # Get the receiver (admin or user based on the sender)
         receiver = await self.get_receiver()
-
-        # Save the message to the database
         message = await database_sync_to_async(self.save_message)(sender, receiver, message_content)
 
-        # Send the message to both the sender and receiver (both user and admin)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message.content,
                 'sender': message.sender.username,
-                'receiver': message.receiver.username,  # Send receiver's username to the frontend
+                'receiver': message.receiver.username,
                 'sender_image_url': message.sender.image_url.url if message.sender.image_url else None,
                 'receiver_image_url': message.receiver.image_url.url if message.receiver.image_url else None,
                 'timestamp': message.timestamp.isoformat()
@@ -51,34 +123,28 @@ class InboxConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
-        # Send the message to WebSocket
-        await self.send(text_data=json.dumps({
-            'message': event['message'],
-            'sender': event['sender'],
-            'receiver': event['receiver'],
-            'sender_image_url': event['sender_image_url'],  # Send sender image URL
-            'receiver_image_url': event['receiver_image_url'],  # Send receiver image URL
-            'timestamp': event['timestamp'],
-        }))
+        await self.send(text_data=json.dumps(event))
 
-    # Async method to get the receiver
     @database_sync_to_async
     def get_receiver(self):
-        # Determine the receiver based on the current user and thread
-        if self.scope['user'] == self.thread.user:
-            return self.thread.admin
-        else:
-            return self.thread.user
+        return self.thread.admin if self.scope['user'] == self.thread.user else self.thread.user
 
     def save_message(self, sender, receiver, content):
-        # Create the message with both sender and receiver
-        message = Message.objects.create(
-            thread=self.thread,
-            sender=sender,
-            receiver=receiver,
-            content=content
-        )
-        return message
+        return Message.objects.create(thread=self.thread, sender=sender, receiver=receiver, content=content)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # from channels.db import database_sync_to_async
