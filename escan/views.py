@@ -76,7 +76,8 @@ import numpy as np
 from django.http import StreamingHttpResponse
 from django.db import transaction
 from PIL import Image
-from .apps import load_disease_model, load_variety_model
+# from .apps import disease_model, variety_model
+from django.apps import apps
 
 from geopy.distance import geodesic
 
@@ -6819,7 +6820,8 @@ def a_predict_from_camera(request):
         print("Image opened successfully")
 
         # --- model prediction ---
-        model = load_disease_model()
+        # model = load_disease_model()
+        model = apps.get_app_config('escan').disease_model
         class_names = [
             'Banana Anthracnose Fruit disease',
             'Banana Bract Mosaic Virus Disease',
@@ -7296,21 +7298,21 @@ torch.serialization.add_safe_globals({
 #     model.eval()
 #     return model
 
-def load_disease_model():
-    # Load the disease model
-    model = models.resnet18(weights=None)  # Replace with your actual model if not ResNet18
-    num_ftrs = model.fc.in_features
-    model.fc = torch.nn.Linear(num_ftrs, 11)  # 11 classes for disease
-    # Load state dict
-    model.load_state_dict(
-        torch.load('escan/model/banana_disease(F)_resnet_state_dict.pth', map_location='cpu')
-    )
-    model.eval()
-    return model
+# def load_disease_model():
+#     # Load the disease model
+#     model = models.resnet18(weights=None)  # Replace with your actual model if not ResNet18
+#     num_ftrs = model.fc.in_features
+#     model.fc = torch.nn.Linear(num_ftrs, 11)  # 11 classes for disease
+#     # Load state dict
+#     model.load_state_dict(
+#         torch.load('escan/model/banana_disease(F)_resnet_state_dict.pth', map_location='cpu')
+#     )
+#     model.eval()
+#     return model
 
 def banana_disease(request):
     # model = load_disease_model()
-    model = load_disease_model
+    model = apps.get_app_config('escan').disease_model
     class_names = ['Banana Anthracnose Disease', 'Banana Bract Mosaic Virus Disease', 
  'Banana Cordana Leaf Disease', 'Banana Healthy',
  'Banana Naturally Leaf Dead', 'Banana Panama Leaf Disease', 
@@ -7501,7 +7503,7 @@ def predict_from_camera(request):
 
         # --- model prediction ---
         # model = load_disease_model()
-        model = load_disease_model
+        model = apps.get_app_config('escan').disease_model
         class_names = [
             'Banana Anthracnose Disease', 
             'Banana Bract Mosaic Virus Disease', 
@@ -7583,18 +7585,18 @@ def predict_from_camera(request):
 
 
 #Farmer Side banana variety model
-def load_variety_model():
-    # Load the variety model (Replace with your actual model loading code)
-    model = models.resnet18(weights=None)  # Example, change to your model
-    num_ftrs = model.fc.in_features
-    model.fc = torch.nn.Linear(num_ftrs, 9)  # number of classes in your variety model
-    model.load_state_dict(torch.load('escan/model/banana_variety_resnet_state_dict.pth'))
-    model.eval()
-    return model
+# def load_variety_model():
+#     # Load the variety model (Replace with your actual model loading code)
+#     model = models.resnet18(weights=None)  # Example, change to your model
+#     num_ftrs = model.fc.in_features
+#     model.fc = torch.nn.Linear(num_ftrs, 9)  # number of classes in your variety model
+#     model.load_state_dict(torch.load('escan/model/banana_variety_resnet_state_dict.pth'))
+#     model.eval()
+#     return model
 
 def banana_variety(request):
     # model = load_variety_model()
-    model = load_variety_model
+    model = apps.get_app_config('escan').variety_model
     class_names = ['Anaji1', 'Banana Lady Finger ( Señorita )', 'Banana Red', 'Bichi', 'Canvendish(Bungulan)', 'Lakatan', 'Saba', 'Sabri Kola', 'Unknow Data']
     class_descriptions = {
     'Anaji1': {
@@ -7846,7 +7848,7 @@ def predict_variety_from_camera(request):
 
         # Load your existing .pth model
         # model = load_variety_model()  # unchanged
-        model = load_variety_model
+        model = apps.get_app_config('escan').variety_model
         model.eval()
 
         class_names = [

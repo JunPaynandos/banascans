@@ -10,16 +10,15 @@
 
 
 from django.apps import AppConfig
-import torch
-from .views import load_disease_model, load_variety_model  # import both
 
 class EscanConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'escan'
 
     def ready(self):
-        global disease_model
-        disease_model = load_disease_model()  # load once
+        import torch
+        from .model_loaders import load_disease_model, load_variety_model
 
-        global variety_model
-        variety_model = load_variety_model()  # load once
+        # store on the AppConfig instance
+        self.disease_model = load_disease_model()
+        self.variety_model = load_variety_model()
