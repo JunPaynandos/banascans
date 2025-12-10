@@ -45,14 +45,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bananae.settings')
 django_asgi_app = get_asgi_application()
 
 # Now it’s safe to import routing (consumers will import models safely now)
-import escan.routing
+# import escan.routing
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            escan.routing.websocket_urlpatterns
-        )
-    ),
+    # "websocket": AuthMiddlewareStack(
+    #     URLRouter(
+    #         escan.routing.websocket_urlpatterns
+    #     )
+    # ),
 })
 
