@@ -75,6 +75,7 @@ import torch.serialization
 import numpy as np
 from django.http import StreamingHttpResponse
 from django.db import transaction
+from PIL import Image
 
 
 from geopy.distance import geodesic
@@ -108,6 +109,33 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_API_KEY)
 # Supabase Credentials
 OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY
 # Renders Pages
+
+# Replace torchvision transforms with pure NumPy/Pillow
+MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
+
+def preprocess(image: Image.Image):
+    """Recreates torchvision transforms: Resize(256), CenterCrop(224), ToTensor(), Normalize()."""
+
+    # Resize
+    image = image.resize((256, 256))
+
+    # Center crop
+    left = (256 - 224) // 2
+    top = (256 - 224) // 2
+    image = image.crop((left, top, left + 224, top + 224))
+
+    # Convert to array, normalize
+    arr = np.asarray(image).astype(np.float32) / 255.0
+    arr = (arr - MEAN) / STD
+    arr = np.transpose(arr, (2, 0, 1))  # HWC → CHW
+    arr = np.expand_dims(arr, 0)        # NCHW
+    tensor = torch.from_numpy(arr)
+
+    return tensor
+
+
 # Landing Page
 def landing_page(request):
     return render(request, 'landing.html')
@@ -6686,12 +6714,27 @@ def a_banana_disease(request):
                 img = Image.open(image).convert('RGB')
                 
                 # Rest of your image processing code
-                img_tensor = transforms.Compose([
-                    transforms.Resize(256),
-                    transforms.CenterCrop(224),
-                    transforms.ToTensor(),
-                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-                ])(img).unsqueeze(0)
+                # img_tensor = transforms.Compose([
+                #     transforms.Resize(256),
+                #     transforms.CenterCrop(224),
+                #     transforms.ToTensor(),
+                #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                # ])(img).unsqueeze(0)
+
+                # Resize to 256x256
+                img = img.resize((256, 256))
+
+                # Center-crop 224x224
+                left = (256 - 224) // 2
+                top = (256 - 224) // 2
+                img = img.crop((left, top, left + 224, top + 224))
+
+                # Convert to normalized tensor (HWC -> CHW)
+                arr = np.asarray(img).astype(np.float32) / 255.0
+                arr = (arr - MEAN) / STD
+                arr = np.transpose(arr, (2, 0, 1))  # HWC -> CHW
+                arr = np.expand_dims(arr, 0)        # Add batch dimension
+                img_tensor = torch.tensor(arr, dtype=torch.float32)
 
                 with torch.no_grad():
                     output = model(img_tensor)
@@ -6790,13 +6833,28 @@ def a_predict_from_camera(request):
             'Banana Sigatoka Leaf Disease',
             'Unknowmn'
         ]
-        transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-        input_tensor = transform(image).unsqueeze(0)
+        # transform = transforms.Compose([
+        #     transforms.Resize(256),
+        #     transforms.CenterCrop(224),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        # ])
+        # input_tensor = transform(image).unsqueeze(0)
+
+        # --- Resize to 256x256 ---
+        image = image.resize((256, 256))
+
+        # --- Center-crop to 224x224 ---
+        left = (256 - 224) // 2
+        top = (256 - 224) // 2
+        image = image.crop((left, top, left + 224, top + 224))
+
+        # --- Convert to numpy array, normalize, and convert to tensor ---
+        arr = np.asarray(image).astype(np.float32) / 255.0   # Scale to 0-1
+        arr = (arr - MEAN) / STD                              # Normalize
+        arr = np.transpose(arr, (2, 0, 1))                   # HWC -> CHW
+        arr = np.expand_dims(arr, 0)                          # Add batch dimension (1, C, H, W)
+        input_tensor = torch.tensor(arr, dtype=torch.float32)
 
         with torch.no_grad():
             output = model(input_tensor)
@@ -6919,12 +6977,27 @@ def a_banana_variety(request):
         if form.is_valid():
             image = form.cleaned_data['image']
             img = Image.open(image).convert('RGB')
-            img_tensor = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ])(img).unsqueeze(0)
+            # img_tensor = transforms.Compose([
+            #     transforms.Resize(256),
+            #     transforms.CenterCrop(224),
+            #     transforms.ToTensor(),
+            #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # ])(img).unsqueeze(0)
+
+             # Resize to 256x256
+            img = img.resize((256, 256))
+
+            # Center-crop 224x224
+            left = (256 - 224) // 2
+            top = (256 - 224) // 2
+            img = img.crop((left, top, left + 224, top + 224))
+
+            # Convert to normalized tensor (HWC -> CHW)
+            arr = np.asarray(img).astype(np.float32) / 255.0
+            arr = (arr - MEAN) / STD
+            arr = np.transpose(arr, (2, 0, 1))  # HWC -> CHW
+            arr = np.expand_dims(arr, 0)        # Add batch dimension
+            img_tensor = torch.tensor(arr, dtype=torch.float32)
 
             with torch.no_grad():
                 output = model(img_tensor)
@@ -7032,13 +7105,28 @@ def a_predict_variety_from_camera(request):
             'Unknown Data'
         ]
         
-        transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-        input_tensor = transform(image).unsqueeze(0)
+        # transform = transforms.Compose([
+        #     transforms.Resize(256),
+        #     transforms.CenterCrop(224),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        # ])
+        # input_tensor = transform(image).unsqueeze(0)
+
+        # --- Resize to 256x256 ---
+        image = image.resize((256, 256))
+
+        # --- Center-crop to 224x224 ---
+        left = (256 - 224) // 2
+        top = (256 - 224) // 2
+        image = image.crop((left, top, left + 224, top + 224))
+
+        # --- Convert to numpy array, normalize, and convert to tensor ---
+        arr = np.asarray(image).astype(np.float32) / 255.0   # Scale to 0-1
+        arr = (arr - MEAN) / STD                              # Normalize
+        arr = np.transpose(arr, (2, 0, 1))                   # HWC -> CHW
+        arr = np.expand_dims(arr, 0)                          # Add batch dimension (1, C, H, W)
+        input_tensor = torch.tensor(arr, dtype=torch.float32)
 
         with torch.no_grad():
             output = model(input_tensor)
@@ -7284,12 +7372,27 @@ def banana_disease(request):
         if form.is_valid():
             image = form.cleaned_data['image']
             img = PILImage.open(image).convert('RGB')
-            img_tensor = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ])(img).unsqueeze(0)
+            # img_tensor = transforms.Compose([
+            #     transforms.Resize(256),
+            #     transforms.CenterCrop(224),
+            #     transforms.ToTensor(),
+            #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # ])(img).unsqueeze(0)
+
+            # Resize to 256x256
+            img = img.resize((256, 256))
+
+            # Center-crop 224x224
+            left = (256 - 224) // 2
+            top = (256 - 224) // 2
+            img = img.crop((left, top, left + 224, top + 224))
+
+            # Convert to normalized tensor (HWC -> CHW)
+            arr = np.asarray(img).astype(np.float32) / 255.0
+            arr = (arr - MEAN) / STD
+            arr = np.transpose(arr, (2, 0, 1))  # HWC -> CHW
+            arr = np.expand_dims(arr, 0)        # Add batch dimension
+            img_tensor = torch.tensor(arr, dtype=torch.float32)
 
             with torch.no_grad():
                 output = model(img_tensor)
@@ -7353,7 +7456,6 @@ def banana_disease(request):
     # return render(request, 'escan/User/Scan/banana_disease.html', {'form': form, 'user_records': user_records})
     return render(request, 'escan/Farmer/Scan/banana_disease.html', {'form': form})
 
-from PIL import Image
 
 def predict_from_camera(request):
     if request.method != 'POST':
@@ -7387,13 +7489,28 @@ def predict_from_camera(request):
             'Banana Sigatoka Le7af Disease', 
             'Unknow Data'
         ]
-        transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-        input_tensor = transform(image).unsqueeze(0)
+        # transform = transforms.Compose([
+        #     transforms.Resize(256),
+        #     transforms.CenterCrop(224),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        # ])
+        # input_tensor = transform(image).unsqueeze(0)
+
+        # Resize to 256x256
+        image = image.resize((256, 256))
+
+        # Center-crop to 224x224
+        left = (256 - 224) // 2
+        top = (256 - 224) // 2
+        image = image.crop((left, top, left + 224, top + 224))
+
+        # Convert to normalized tensor (HWC → CHW)
+        arr = np.asarray(image).astype(np.float32) / 255.0
+        arr = (arr - MEAN) / STD
+        arr = np.transpose(arr, (2, 0, 1))  # HWC → CHW
+        arr = np.expand_dims(arr, 0)        # Add batch dimension
+        input_tensor = torch.tensor(arr, dtype=torch.float32)
 
         with torch.no_grad():
             output = model(input_tensor)
@@ -7520,12 +7637,27 @@ def banana_variety(request):
         if form.is_valid():
             image = form.cleaned_data['image']
             img = Image.open(image).convert('RGB')
-            img_tensor = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ])(img).unsqueeze(0)
+            # img_tensor = transforms.Compose([
+            #     transforms.Resize(256),
+            #     transforms.CenterCrop(224),
+            #     transforms.ToTensor(),
+            #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # ])(img).unsqueeze(0)
+
+            # Resize to 256x256
+            img = img.resize((256, 256))
+
+            # Center-crop to 224x224
+            left = (256 - 224) // 2
+            top = (256 - 224) // 2
+            img = img.crop((left, top, left + 224, top + 224))
+
+            # Convert to normalized tensor (same as torchvision)
+            arr = np.asarray(img).astype(np.float32) / 255.0
+            arr = (arr - MEAN) / STD
+            arr = np.transpose(arr, (2, 0, 1))  # HWC → CHW
+            arr = np.expand_dims(arr, 0)        # Add batch dimension
+            img_tensor = torch.tensor(arr, dtype=torch.float32)
 
             with torch.no_grad():
                 output = model(img_tensor)
@@ -7586,15 +7718,97 @@ def banana_variety(request):
     # user_records = DetectionRecord.objects.filter(user=request.user).order_by('-timestamp')[:4]
 
     return render(request, 'escan/Farmer/Scan/banana_variety.html', {'form': form})
+
+# ORIGINAL
 # Farmer Side
+# def predict_variety_from_camera(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Invalid method'}, status=405)
+
+#     try:
+#         print("Request.FILES:", request.FILES)
+#         print("Request.POST:", request.POST)
+
+#         image_file = request.FILES.get('image')
+#         preview = request.POST.get('preview', 'false') == 'true'
+
+#         if not image_file:
+#             return JsonResponse({'error': 'No image uploaded'}, status=400)
+
+#         image = Image.open(image_file).convert('RGB')
+#         print("Image opened successfully")
+
+#         # --- model prediction ---
+#         model = load_variety_model()
+#         class_names = [
+#             'Anaji1', 
+#             'Banana Lady Finger (Señorita)', 
+#             'Banana Red', 
+#             'Bichi', 
+#             'Canvendish(Bungulan)', 
+#             'Lakatan', 
+#             'Saba', 
+#             'Sabri Kola',
+#             'Unknown Data'
+#         ]
+        
+#         transform = transforms.Compose([
+#             transforms.Resize(256),
+#             transforms.CenterCrop(224),
+#             transforms.ToTensor(),
+#             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+#         ])
+#         input_tensor = transform(image).unsqueeze(0)
+
+#         with torch.no_grad():
+#             output = model(input_tensor)
+#             probs = torch.nn.functional.softmax(output[0], dim=0)
+#             confidence = torch.max(probs).item() * 100
+#             _, predicted = torch.max(output, 1)
+#             result = class_names[predicted.item()]
+
+#         if preview:
+#             return JsonResponse({'result': result, 'confidence': confidence})
+
+#         # --- capture mode: save image and redirect ---
+#         user = request.user
+#         if not user.is_authenticated:
+#             return JsonResponse({'error': 'Authentication required'}, status=401)
+
+#         file_name = f"{user.id}_{datetime.now():%Y%m%d_%H%M%S}_capture.jpg"
+#         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_ROLE_KEY)
+#         bucket = supabase.storage.from_('detection-images')
+
+#         buffer = BytesIO()
+#         image.save(buffer, format='JPEG')
+#         buffer.seek(0)
+#         upload_response = bucket.upload(file_name, buffer.read(), {"content-type": "image/jpeg"})
+
+#         # Debug upload response
+#         print("Upload response:", upload_response)
+
+#         image_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/detection-images/{file_name}"
+
+#         record = DetectionRecord.objects.create(
+#             user=user,
+#             prediction=result,
+#             confidence=confidence,
+#             image_url=image_url,
+#             model_type='variety'
+#         )
+#         redirect_url = reverse('a_view_scan_result', kwargs={'record_id': record.id})
+#         return JsonResponse({'redirect_url': redirect_url})
+
+#     except Exception as e:
+#         print("Exception during predic_varietyt_from_camera:", e)
+#         return JsonResponse({'error': f'Unexpected error: {str(e)}'}, status=500)
+
+
 def predict_variety_from_camera(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
 
     try:
-        print("Request.FILES:", request.FILES)
-        print("Request.POST:", request.POST)
-
         image_file = request.FILES.get('image')
         preview = request.POST.get('preview', 'false') == 'true'
 
@@ -7602,10 +7816,11 @@ def predict_variety_from_camera(request):
             return JsonResponse({'error': 'No image uploaded'}, status=400)
 
         image = Image.open(image_file).convert('RGB')
-        print("Image opened successfully")
 
-        # --- model prediction ---
-        model = load_variety_model()
+        # Load your existing .pth model
+        model = load_variety_model()  # unchanged
+        model.eval()
+
         class_names = [
             'Anaji1', 
             'Banana Lady Finger (Señorita)', 
@@ -7617,26 +7832,21 @@ def predict_variety_from_camera(request):
             'Sabri Kola',
             'Unknown Data'
         ]
-        
-        transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-        input_tensor = transform(image).unsqueeze(0)
+
+        # Preprocess (no torchvision)
+        input_tensor = preprocess(image)
 
         with torch.no_grad():
             output = model(input_tensor)
-            probs = torch.nn.functional.softmax(output[0], dim=0)
-            confidence = torch.max(probs).item() * 100
-            _, predicted = torch.max(output, 1)
-            result = class_names[predicted.item()]
+            probs = torch.softmax(output[0], dim=0)
+            confidence = probs.max().item() * 100
+            predicted = probs.argmax().item()
+            result = class_names[predicted]
 
         if preview:
             return JsonResponse({'result': result, 'confidence': confidence})
 
-        # --- capture mode: save image and redirect ---
+        # --- save to supabase ---
         user = request.user
         if not user.is_authenticated:
             return JsonResponse({'error': 'Authentication required'}, status=401)
@@ -7648,10 +7858,7 @@ def predict_variety_from_camera(request):
         buffer = BytesIO()
         image.save(buffer, format='JPEG')
         buffer.seek(0)
-        upload_response = bucket.upload(file_name, buffer.read(), {"content-type": "image/jpeg"})
-
-        # Debug upload response
-        print("Upload response:", upload_response)
+        bucket.upload(file_name, buffer.read(), {"content-type": "image/jpeg"})
 
         image_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/detection-images/{file_name}"
 
@@ -7662,12 +7869,14 @@ def predict_variety_from_camera(request):
             image_url=image_url,
             model_type='variety'
         )
+
         redirect_url = reverse('a_view_scan_result', kwargs={'record_id': record.id})
         return JsonResponse({'redirect_url': redirect_url})
 
     except Exception as e:
-        print("Exception during predic_varietyt_from_camera:", e)
+        print("Error in predict_variety_from_camera:", e)
         return JsonResponse({'error': f'Unexpected error: {str(e)}'}, status=500)
+
 
 @login_required
 def disease_scan_history(request):

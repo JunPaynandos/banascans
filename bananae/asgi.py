@@ -33,26 +33,40 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 #     ),
 # })
 
+# import os
+# from django.core.asgi import get_asgi_application
+# from channels.routing import ProtocolTypeRouter, URLRouter
+# from channels.auth import AuthMiddlewareStack
+
+# # Must set this **before anything else Django-related**
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bananae.settings')
+
+# # Initialize Django ASGI application first
+# django_asgi_app = get_asgi_application()
+
+# # Now it’s safe to import routing (consumers will import models safely now)
+# import escan.routing
+
+# application = ProtocolTypeRouter({
+#     "http": django_asgi_app,
+#     "websocket": AuthMiddlewareStack(
+#         URLRouter(
+#             escan.routing.websocket_urlpatterns
+#         )
+#     ),
+# })
+
+
+
 import os
 from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter
 
-# Must set this **before anything else Django-related**
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bananae.settings')
 
-# Initialize Django ASGI application first
 django_asgi_app = get_asgi_application()
-
-# Now it’s safe to import routing (consumers will import models safely now)
-# import escan.routing
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    # "websocket": AuthMiddlewareStack(
-    #     URLRouter(
-    #         escan.routing.websocket_urlpatterns
-    #     )
-    # ),
 })
 
