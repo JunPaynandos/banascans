@@ -8213,35 +8213,81 @@ def get_weather_context(request):
         'weather_icon': 'fas fa-question-circle',
     }
 
+# def get_scanning_tip(condition, temperature, humidity):
+#     """Generate detailed scanning tip based on weather conditions"""
+#     tips = {
+#         'clear': f'Perfect conditions for outdoor scanning! Clear skies provide excellent natural lighting.',
+#         'clouds': f'Good diffused lighting for accurate scans. Cloudy conditions reduce harsh shadows.',
+#         'rain': f'Indoor scanning recommended. High humidity ({humidity}%) may affect equipment.',
+#         'drizzle': f'Light rain detected. Consider indoor scanning for equipment protection.',
+#         'thunderstorm': f'Severe weather - stay indoors and scan stored samples safely.',
+#         'snow': f'Cold weather ({temperature}°C) - protect equipment and consider indoor scanning.',
+#         'mist': f'Reduced visibility. Use additional artificial lighting for clear scans.',
+#         'fog': f'Poor visibility conditions. Wait for clearer weather or use controlled lighting.',
+#         'haze': f'Hazy conditions may affect image quality. Ensure good lighting setup.'
+#     }
+    
+#     base_tip = tips.get(condition, 'Moderate scanning conditions')
+    
+#     # Add temperature-specific advice
+#     if temperature >= 35:
+#         base_tip += f' High temperature ({temperature}°C) - protect equipment from overheating.'
+#     elif temperature < 10:
+#         base_tip += f' Cold temperature ({temperature}°C) - allow equipment to acclimate.'
+    
+#     # Add humidity-specific advice
+#     if humidity > 80:
+#         base_tip += f' High humidity ({humidity}%) - watch for condensation on lens.'
+#     elif humidity < 30:
+#         base_tip += f' Low humidity ({humidity}%) - good conditions for equipment.'
+    
+#     return base_tip
+
 def get_scanning_tip(condition, temperature, humidity):
     """Generate detailed scanning tip based on weather conditions"""
+
+    # ---- FIX: convert temperature & humidity to numbers ----
+    try:
+        temperature = float(temperature)
+    except (TypeError, ValueError):
+        temperature = None
+
+    try:
+        humidity = float(humidity)
+    except (TypeError, ValueError):
+        humidity = None
+    # ---------------------------------------------------------
+
     tips = {
-        'clear': f'Perfect conditions for outdoor scanning! Clear skies provide excellent natural lighting.',
-        'clouds': f'Good diffused lighting for accurate scans. Cloudy conditions reduce harsh shadows.',
+        'clear': 'Perfect conditions for outdoor scanning! Clear skies provide excellent natural lighting.',
+        'clouds': 'Good diffused lighting for accurate scans. Cloudy conditions reduce harsh shadows.',
         'rain': f'Indoor scanning recommended. High humidity ({humidity}%) may affect equipment.',
-        'drizzle': f'Light rain detected. Consider indoor scanning for equipment protection.',
-        'thunderstorm': f'Severe weather - stay indoors and scan stored samples safely.',
+        'drizzle': 'Light rain detected. Consider indoor scanning for equipment protection.',
+        'thunderstorm': 'Severe weather - stay indoors and scan stored samples safely.',
         'snow': f'Cold weather ({temperature}°C) - protect equipment and consider indoor scanning.',
-        'mist': f'Reduced visibility. Use additional artificial lighting for clear scans.',
-        'fog': f'Poor visibility conditions. Wait for clearer weather or use controlled lighting.',
-        'haze': f'Hazy conditions may affect image quality. Ensure good lighting setup.'
+        'mist': 'Reduced visibility. Use additional artificial lighting for clear scans.',
+        'fog': 'Poor visibility conditions. Wait for clearer weather or use controlled lighting.',
+        'haze': 'Hazy conditions may affect image quality. Ensure good lighting setup.'
     }
-    
+
     base_tip = tips.get(condition, 'Moderate scanning conditions')
-    
-    # Add temperature-specific advice
-    if temperature >= 35:
-        base_tip += f' High temperature ({temperature}°C) - protect equipment from overheating.'
-    elif temperature < 10:
-        base_tip += f' Cold temperature ({temperature}°C) - allow equipment to acclimate.'
-    
-    # Add humidity-specific advice
-    if humidity > 80:
-        base_tip += f' High humidity ({humidity}%) - watch for condensation on lens.'
-    elif humidity < 30:
-        base_tip += f' Low humidity ({humidity}%) - good conditions for equipment.'
-    
+
+    # Temperature advice
+    if temperature is not None:
+        if temperature >= 35:
+            base_tip += f' High temperature ({temperature}°C) - protect equipment from overheating.'
+        elif temperature < 10:
+            base_tip += f' Cold temperature ({temperature}°C) - allow equipment to acclimate.'
+
+    # Humidity advice
+    if humidity is not None:
+        if humidity > 80:
+            base_tip += f' High humidity ({humidity}%) - watch for condensation on lens.'
+        elif humidity < 30:
+            base_tip += f' Low humidity ({humidity}%) - good conditions for equipment.'
+
     return base_tip
+
 
 def get_weather_icon(condition):
     """Get appropriate Font Awesome icon for weather condition"""
