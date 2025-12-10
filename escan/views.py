@@ -76,7 +76,7 @@ import numpy as np
 from django.http import StreamingHttpResponse
 from django.db import transaction
 from PIL import Image
-
+from .apps import load_disease_model, load_variety_model
 
 from geopy.distance import geodesic
 
@@ -7309,7 +7309,8 @@ def load_disease_model():
     return model
 
 def banana_disease(request):
-    model = load_disease_model()
+    # model = load_disease_model()
+    model = load_disease_model
     class_names = ['Banana Anthracnose Disease', 'Banana Bract Mosaic Virus Disease', 
  'Banana Cordana Leaf Disease', 'Banana Healthy',
  'Banana Naturally Leaf Dead', 'Banana Panama Leaf Disease', 
@@ -7481,7 +7482,6 @@ def banana_disease(request):
     # return render(request, 'escan/User/Scan/banana_disease.html', {'form': form, 'user_records': user_records})
     return render(request, 'escan/Farmer/Scan/banana_disease.html', {'form': form})
 
-
 def predict_from_camera(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -7500,7 +7500,8 @@ def predict_from_camera(request):
         print("Image opened successfully")
 
         # --- model prediction ---
-        model = load_disease_model()
+        # model = load_disease_model()
+        model = load_disease_model
         class_names = [
             'Banana Anthracnose Disease', 
             'Banana Bract Mosaic Virus Disease', 
@@ -7511,7 +7512,7 @@ def predict_from_camera(request):
             'Banana Panama Tree Disease',
             'Banana Pestalotiopsis Disease', 
             'Banana Rhizome Root Tree Disease', 
-            'Banana Sigatoka Le7af Disease', 
+            'Banana Sigatoka Leaf Disease', 
             'Unknow Data'
         ]
         # transform = transforms.Compose([
@@ -7592,7 +7593,8 @@ def load_variety_model():
     return model
 
 def banana_variety(request):
-    model = load_variety_model()
+    # model = load_variety_model()
+    model = load_variety_model
     class_names = ['Anaji1', 'Banana Lady Finger ( Señorita )', 'Banana Red', 'Bichi', 'Canvendish(Bungulan)', 'Lakatan', 'Saba', 'Sabri Kola', 'Unknow Data']
     class_descriptions = {
     'Anaji1': {
@@ -7843,7 +7845,8 @@ def predict_variety_from_camera(request):
         image = Image.open(image_file).convert('RGB')
 
         # Load your existing .pth model
-        model = load_variety_model()  # unchanged
+        # model = load_variety_model()  # unchanged
+        model = load_variety_model
         model.eval()
 
         class_names = [
