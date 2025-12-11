@@ -76,8 +76,8 @@ import numpy as np
 from django.http import StreamingHttpResponse
 from django.db import transaction
 from PIL import Image
-# from .apps import disease_model, variety_model
-from django.apps import apps
+# from django.apps import apps
+from escan.model_loaders import load_disease_model
 
 from geopy.distance import geodesic
 
@@ -7311,8 +7311,8 @@ torch.serialization.add_safe_globals({
 #     return model
 
 def banana_disease(request):
-    # model = load_disease_model()
-    model = apps.get_app_config('escan').disease_model
+    model = load_disease_model()
+    # model = apps.get_app_config('escan').disease_model
     class_names = ['Banana Anthracnose Disease', 'Banana Bract Mosaic Virus Disease', 
  'Banana Cordana Leaf Disease', 'Banana Healthy',
  'Banana Naturally Leaf Dead', 'Banana Panama Leaf Disease', 
@@ -7502,8 +7502,8 @@ def predict_from_camera(request):
         print("Image opened successfully")
 
         # --- model prediction ---
-        # model = load_disease_model()
-        model = apps.get_app_config('escan').disease_model
+        model = load_disease_model()
+        # model = apps.get_app_config('escan').disease_model
         class_names = [
             'Banana Anthracnose Disease', 
             'Banana Bract Mosaic Virus Disease', 
@@ -7595,8 +7595,8 @@ def predict_from_camera(request):
 #     return model
 
 def banana_variety(request):
-    # model = load_variety_model()
-    model = apps.get_app_config('escan').variety_model
+    model = load_variety_model()
+    # model = apps.get_app_config('escan').variety_model
     class_names = ['Anaji1', 'Banana Lady Finger ( Señorita )', 'Banana Red', 'Bichi', 'Canvendish(Bungulan)', 'Lakatan', 'Saba', 'Sabri Kola', 'Unknow Data']
     class_descriptions = {
     'Anaji1': {
@@ -7847,8 +7847,8 @@ def predict_variety_from_camera(request):
         image = Image.open(image_file).convert('RGB')
 
         # Load your existing .pth model
-        # model = load_variety_model()  # unchanged
-        model = apps.get_app_config('escan').variety_model
+        model = load_variety_model()
+        # model = apps.get_app_config('escan').variety_model
         model.eval()
 
         class_names = [
