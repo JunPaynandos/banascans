@@ -80,7 +80,8 @@ multidict==6.1.0
 namex==0.0.8
 nest-asyncio==1.6.0
 networkx==3.4.2
-numpy==2.0.2
+# numpy==2.0.2
+numpy==1.26.4 
 opencv-python==4.11.0.86
 opt_einsum==3.4.0
 optree==0.14.0
