@@ -7283,9 +7283,19 @@ def a_view_scan_result(request, record_id):
 # -------------------------------------------
 # Scan Farmer Side
 # Allow loading of ResNet model class
-torch.serialization.add_safe_globals({
-    'torchvision.models.resnet.ResNet': models.ResNet
-})
+# torch.serialization.add_safe_globals({
+#     'torchvision.models.resnet.ResNet': models.ResNet
+# })
+
+# def register_torch_globals():
+#     import torch
+#     from torchvision import models
+
+#     if hasattr(torch.serialization, "add_safe_globals"):
+#         torch.serialization.add_safe_globals({
+#             'torchvision.models.resnet.ResNet': models.ResNet
+#         })
+
 
 #ORIGINAL
 #banana disease model
