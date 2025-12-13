@@ -76,11 +76,14 @@ AUTH_USER_MODEL = 'escan.CustomUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "banascans.onrender.com"
 ]
 INTERNAL_IPS = [
     '127.0.0.1',
     'localhost',
+    'banascans.onrender.com'
 ]
+CSRF_TRUSTED_ORIGINS = ["https://banascans.onrender.com"]
 
 # Logging configuration for debugging
 LOGGING = {
@@ -291,7 +294,7 @@ import os
 MEDIA_URL = 'https://crvtfxinuvycxwgihree.supabase.co/storage/v1/object/public/product-images/'
 
 # MEDIA_URL='/media/'
-MEDIA_ROOT= os.path.join(BASE_DIR,'media')
+# MEDIA_ROOT= os.path.join(BASE_DIR,'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
