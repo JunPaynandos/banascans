@@ -282,15 +282,16 @@ USE_TZ = True
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'escan', 'static/'),
-]
+# STATICFILES_DIRS = [9999
+#     os.path.join(BASE_DIR, 'escan', '/static/'),
+# ]
 
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-import os
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # MEDIA Settings
 MEDIA_URL = 'https://crvtfxinuvycxwgihree.supabase.co/storage/v1/object/public/product-images/'
