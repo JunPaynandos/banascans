@@ -91,9 +91,31 @@ from .models import (
 from .models import ShippingAddress
 from .forms import ShippingAddressForm
 
-from gradio_client import Client, handle_file
+# from gradio_client import Client, handle_file
 
-HF_CLIENT = Client("Inoue1/banaescan")
+# HF_CLIENT = Client("Inoue1/banaescan")
+
+from gradio_client import handle_file
+from threading import Lock
+
+# ================= SAFE LAZY HF CLIENT =================
+
+_hf_client = None
+_hf_lock = Lock()
+
+def get_hf_client():
+    """
+    Lazily create HuggingFace Gradio client.
+    This MUST NOT run at import time (Render-safe).
+    """
+    global _hf_client
+    if _hf_client is None:
+        with _hf_lock:
+            if _hf_client is None:
+                from gradio_client import Client
+                _hf_client = Client("Inoue1/banaescan")
+    return _hf_client
+
 
 # Track last action (undo support)
 last_action = {}
@@ -7152,10 +7174,18 @@ def a_banana_disease(request):
 
                 try:
                     # ========== 3. HF PREDICTION ==========
-                    result_api = HF_CLIENT.predict(
+                    # result_api = HF_CLIENT.predict(
+                    #     image=handle_file(tmp_path),
+                    #     model_type="disease",
+                    #     api_name="/predict_image"
+                    # )
+
+                     # 3️⃣ HF prediction (lazy client)
+                    client = get_hf_client()
+                    result_api = client.predict(
                         image=handle_file(tmp_path),
                         model_type="disease",
-                        api_name="/predict_image"
+                        api_name="/predict_image",
                     )
 
                     if isinstance(result_api, dict):
@@ -7322,10 +7352,18 @@ def a_predict_from_camera(request):
 
         try:
             # ================= HF PREDICTION =================
-            result_api = HF_CLIENT.predict(
+            # result_api = HF_CLIENT.predict(
+            #     image=handle_file(tmp_path),
+            #     model_type="disease",
+            #     api_name="/predict_image"
+            # )
+
+             # 3️⃣ HF prediction (lazy client)
+            client = get_hf_client()
+            result_api = client.predict(
                 image=handle_file(tmp_path),
                 model_type="disease",
-                api_name="/predict_image"
+                api_name="/predict_image",
             )
 
             if not isinstance(result_api, dict):
@@ -7653,10 +7691,18 @@ def a_banana_variety(request):
 
                 try:
                     # ========== 3. HF PREDICTION ==========
-                    result_api = HF_CLIENT.predict(
+                    # result_api = HF_CLIENT.predict(
+                    #     image=handle_file(tmp_path),
+                    #     model_type="variety",
+                    #     api_name="/predict_image"
+                    # )
+
+                     # 3️⃣ HF prediction (lazy client)
+                    client = get_hf_client()
+                    result_api = client.predict(
                         image=handle_file(tmp_path),
                         model_type="variety",
-                        api_name="/predict_image"
+                        api_name="/predict_image",
                     )
 
                     if isinstance(result_api, dict):
@@ -7831,10 +7877,18 @@ def a_predict_variety_from_camera(request):
 
         try:
             # ================= HF PREDICTION =================
-            result_api = HF_CLIENT.predict(
+            # result_api = HF_CLIENT.predict(
+            #     image=handle_file(tmp_path),
+            #     model_type="variety",
+            #     api_name="/predict_image"
+            # )
+
+            # 3️⃣ HF prediction (lazy client)
+            client = get_hf_client()
+            result_api = client.predict(
                 image=handle_file(tmp_path),
                 model_type="variety",
-                api_name="/predict_image"
+                api_name="/predict_image",
             )
 
             if not isinstance(result_api, dict):
@@ -8311,10 +8365,18 @@ def banana_disease(request):
 
                 try:
                     # ========== 3. HF PREDICTION ==========
-                    result_api = HF_CLIENT.predict(
+                    # result_api = HF_CLIENT.predict(
+                    #     image=handle_file(tmp_path),
+                    #     model_type="disease",
+                    #     api_name="/predict_image"
+                    # )
+
+                     # 3️⃣ HF prediction (lazy client)
+                    client = get_hf_client()
+                    result_api = client.predict(
                         image=handle_file(tmp_path),
                         model_type="disease",
-                        api_name="/predict_image"
+                        api_name="/predict_image",
                     )
 
                     if isinstance(result_api, dict):
@@ -8481,10 +8543,18 @@ def predict_from_camera(request):
 
         try:
             # ================= HF PREDICTION =================
-            result_api = HF_CLIENT.predict(
+            # result_api = HF_CLIENT.predict(
+            #     image=handle_file(tmp_path),
+            #     model_type="disease",
+            #     api_name="/predict_image"
+            # )
+
+            # 3️⃣ HF prediction (lazy client)
+            client = get_hf_client()
+            result_api = client.predict(
                 image=handle_file(tmp_path),
                 model_type="disease",
-                api_name="/predict_image"
+                api_name="/predict_image",
             )
 
             if not isinstance(result_api, dict):
@@ -8804,10 +8874,18 @@ def banana_variety(request):
 
                 try:
                     # ========== 3. HF PREDICTION ==========
-                    result_api = HF_CLIENT.predict(
+                    # result_api = HF_CLIENT.predict(
+                    #     image=handle_file(tmp_path),
+                    #     model_type="variety",
+                    #     api_name="/predict_image"
+                    # )
+
+                     # 3️⃣ HF prediction (lazy client)
+                    client = get_hf_client()
+                    result_api = client.predict(
                         image=handle_file(tmp_path),
                         model_type="variety",
-                        api_name="/predict_image"
+                        api_name="/predict_image",
                     )
 
                     if isinstance(result_api, dict):
@@ -9031,11 +9109,19 @@ def predict_variety_from_camera(request):
 
         try:
             # ================= HF PREDICTION =================
-            result_api = HF_CLIENT.predict(
+            # result_api = HF_CLIENT.predict(
+            #     image=handle_file(tmp_path),
+            #     model_type="variety",
+            #     api_name="/predict_image"
+            # )
+
+             # 3️⃣ HF prediction (lazy client)
+            client = get_hf_client()
+            result_api = client.predict(
                 image=handle_file(tmp_path),
                 model_type="variety",
-                api_name="/predict_image"
-            )
+                api_name="/predict_image",
+            )   
 
             if not isinstance(result_api, dict):
                 raise ValueError("Invalid response from HF Space")
