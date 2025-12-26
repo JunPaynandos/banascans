@@ -1,0 +1,1079 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BANAeScan</title>
+  <link rel="icon" href="{% static 'assets/LogoW.png' %}" type="image/png" style="border-radius: 50%;">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --dark-brown: #2F1609;
+      --medium-brown: #704210;
+      --light-brown: #96500E;
+      --gold: #DA9408;
+      --light-gold: #FBD576;
+      --bright-gold: #FBD242;
+      --white: #FFFFFF;
+      --light-bg: #FFF9EC;
+      --surface: #FFFCF4;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: var(--dark-brown);
+      background: linear-gradient(180deg, #fffdf7 0%, #ffe8ba 80%);
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    main {
+      padding-top: 94px;
+    }
+
+    section {
+      scroll-margin-top: 130px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    .site-nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      background: rgba(47, 22, 9, 0.85);
+      backdrop-filter: blur(16px);
+      z-index: 1000;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .nav-inner {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-img {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 2px solid var(--bright-gold);
+      object-fit: cover;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .logo-text-block {
+      line-height: 1.1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-text {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .logo-tagline {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--light-gold);
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .nav-link {
+      color: var(--light-gold);
+      font-size: 1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible {
+      color: var(--bright-gold);
+      transform: translateY(-2px);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .language-select {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(251, 210, 66, 0.5);
+      background-color: rgba(255,255,255,0.1);
+      color: var(--white);
+      font-weight: 600;
+      outline: none;
+      min-width: 120px;
+    }
+
+    .language-select option {
+      color: var(--dark-brown);
+      background-color: var(--white);
+    }
+
+    .burger {
+      display: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(251, 210, 66, 0.4);
+      background: transparent;
+      color: var(--white);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .burger-line,
+    .burger-line::before,
+    .burger-line::after {
+      content: "";
+      width: 24px;
+      height: 2px;
+      background-color: var(--white);
+      position: absolute;
+      transition: all 0.3s ease;
+    }
+
+    .burger-line::before {
+      transform: translateY(-7px);
+    }
+
+    .burger-line::after {
+      transform: translateY(7px);
+    }
+
+    .burger.active .burger-line {
+      background-color: transparent;
+    }
+
+    .burger.active .burger-line::before {
+      transform: rotate(45deg);
+    }
+
+    .burger.active .burger-line::after {
+      transform: rotate(-45deg);
+    }
+
+    .hero {
+      position: relative;
+      padding: 120px 32px 80px;
+      background: linear-gradient(135deg, rgba(47, 22, 9, 0.9), rgba(112, 66, 16, 0.85)), url("/static/img/bc1.png") center/cover no-repeat;
+      color: var(--white);
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(253, 217, 101, 0.5), transparent 55%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.95rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+      margin-bottom: 14px;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      color: var(--bright-gold);
+      margin: 0 0 20px;
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin: 0 0 16px;
+    }
+
+    .hero-description--secondary {
+      color: var(--light-gold);
+      font-weight: 500;
+    }
+
+    .hero-checklist {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 30px 0;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .check-item i {
+      color: var(--bright-gold);
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      padding: 14px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--bright-gold));
+      color: var(--dark-brown);
+      box-shadow: 0 15px 30px rgba(218, 148, 8, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(251, 210, 66, 0.7);
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover {
+      transform: translateY(-3px);
+    }
+
+    .hero-visual {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .hero-logo-wrapper {
+      position: relative;
+      width: min(320px, 70vw);
+      margin-left: auto;
+    }
+
+    .hero-logo {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      border: 5px solid var(--bright-gold);
+      padding: 12px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+    }
+
+    .hero-glow {
+      position: absolute;
+      inset: -25px;
+      border-radius: 50%;
+      border: 1px dashed rgba(251, 210, 66, 0.7);
+      animation: pulse 6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.5; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.5; }
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: rgba(255, 249, 236, 0.1);
+      border: 1px solid rgba(251, 210, 66, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: var(--bright-gold);
+    }
+
+    .stat-copy {
+      margin: 0;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .section-shell {
+      padding: 90px 32px;
+    }
+
+    .section-shell.light {
+      background-color: var(--white);
+    }
+
+    .section-shell.soft {
+      background-color: rgba(112, 66, 16, 0.08);
+    }
+
+    .section-intro {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 60px;
+    }
+
+    .eyebrow {
+      font-size: 0.9rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--light-brown);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      margin: 0 0 16px;
+      color: var(--medium-brown);
+    }
+
+    .section-description {
+      font-size: 1.05rem;
+      color: var(--light-brown);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 28px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .service-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(47, 22, 9, 0.08);
+      border: 1px solid rgba(218, 148, 8, 0.3);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 30px 60px rgba(47, 22, 9, 0.15);
+    }
+
+    .service-icon {
+      height: 200px;
+      object-fit: contain;
+      margin-bottom: 20px;
+    }
+
+    .service-title {
+      font-size: 1.4rem;
+      color: var(--dark-brown);
+      margin-bottom: 12px;
+    }
+
+    .service-description {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--light-brown);
+      margin: 0;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .team-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 40px rgba(47, 22, 9, 0.08);
+      border: 1px solid rgba(112, 66, 16, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-align: center;
+    }
+
+    .team-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 50px rgba(47, 22, 9, 0.15);
+    }
+
+    .team-img {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 20px;
+      border: 3px solid var(--bright-gold);
+    }
+
+    .team-name {
+      font-size: 1.3rem;
+      margin-bottom: 6px;
+      color: var(--medium-brown);
+    }
+
+    .team-role {
+      font-size: 1rem;
+      color: var(--light-brown);
+      font-style: italic;
+      margin: 0;
+    }
+
+    .footer {
+      background: var(--dark-brown);
+      color: var(--white);
+      padding: 80px 32px 40px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-title {
+      font-size: 1.1rem;
+      color: var(--bright-gold);
+      margin-bottom: 20px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .footer-about {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.8);
+      margin: 0;
+    }
+
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      color: rgba(255,255,255,0.85);
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--bright-gold);
+      transform: translateX(5px);
+    }
+
+    .footer-contact p {
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .social-link {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(251, 210, 66, 0.5);
+      display: grid;
+      place-items: center;
+      color: var(--white);
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .social-link:hover {
+      background: var(--bright-gold);
+      color: var(--dark-brown);
+      transform: translateY(-3px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 40px;
+      margin-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    @media (max-width: 1200px) {
+      .nav-inner {
+        padding: 16px 24px;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .nav-inner {
+        padding: 16px 20px;
+      }
+
+      .nav-menu {
+        position: absolute;
+        top: calc(100% + 12px);
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: rgba(47, 22, 9, 0.97);
+        border-radius: 20px;
+        padding: 20px;
+        transform-origin: top;
+        transform: scaleY(0);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .nav-menu.active {
+        transform: scaleY(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .nav-actions {
+        margin-left: auto;
+      }
+
+      .burger {
+        display: inline-flex;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-logo-wrapper {
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding-top: 100px;
+      }
+
+      .nav-actions {
+        gap: 8px;
+      }
+
+      .language-select {
+        min-width: auto;
+      }
+
+      .hero {
+        padding: 100px 20px 60px;
+      }
+
+      .section-shell {
+        padding: 70px 20px;
+      }
+
+      .hero-checklist {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .logo-text {
+        font-size: 1rem;
+      }
+
+      .logo-tagline {
+        display: none;
+      }
+
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .service-card,
+      .team-card {
+        padding: 24px;
+      }
+
+      .service-icon {
+        height: 150px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="#about" class="logo-container">
+        <img src="/static/img/LogoW.png" alt="BANAe-SCAN logo" class="logo-img">
+        <div class="logo-text-block">
+          <span class="logo-text">BANAe-SCAN</span>
+          <span class="logo-tagline">Smart Farming</span>
+        </div>
+      </a>
+
+      <ul class="nav-menu" id="navMenu">
+        <li>
+          <a href="#about" class="nav-link">
+            <i class="bi bi-info-circle"></i>
+            <span id="navAbout">About</span>
+          </a>
+        </li>
+        <li>
+          <a href="#services" class="nav-link">
+            <i class="bi bi-tools"></i>
+            <span id="navServices">Services</span>
+          </a>
+        </li>
+        <li>
+          <a href="#team" class="nav-link">
+            <i class="bi bi-people"></i>
+            <span id="navTeam">Team</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <label class="sr-only" for="languageSelect">Choose language</label>
+        <select id="languageSelect" class="language-select">
+          <option value="en">English</option>
+          <option value="ph">Tagalog</option>
+        </select>
+        <button class="burger" id="burger" aria-label="Toggle navigation" aria-controls="navMenu" aria-expanded="false">
+          <span class="burger-line"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="about">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">AI-powered platform</p>
+          <h1 class="hero-title" id="welcomeTitle">
+            Welcome to BANAe-SCAN: Smart Farming Made Simple! 🌱📸
+          </h1>
+          <p class="hero-description" id="welcomeDesc">
+            Your all-in-one platform for detecting banana diseases and identifying different varieties! Simply scan your banana plant to diagnose diseases and discover its type. Plus, explore our store to purchase high-quality banana-related products, ensuring healthier crops and better harvests.
+          </p>
+          <p class="hero-description hero-description--secondary">
+            🌿 Scan. Identify. Shop. Grow. 🛒 Add to cart now!
+          </p>
+
+          <div class="hero-checklist">
+            <div class="check-item">
+              <i class="bi bi-shield-check"></i>
+              Precise disease detection
+            </div>
+            <div class="check-item">
+              <i class="bi bi-badge-ad"></i>
+              Verified banana variety IDs
+            </div>
+            <div class="check-item">
+              <i class="bi bi-bag-heart"></i>
+              Curated grower marketplace
+            </div>
+          </div>
+
+          <div class="hero-buttons">
+            <a href="{% url 'login' %}" class="btn-primary">Login</a>
+            <a href="{% url 'signup_view' %}" class="btn-secondary">Sign Up</a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-logo-wrapper">
+            <img src="{% static 'img/LogoW.png' %}" alt="BANAe-SCAN emblem" class="hero-logo">
+            <div class="hero-glow"></div>
+          </div>
+          <div class="stat-grid">
+            <article class="stat-card">
+              <p class="stat-label">Scans processed</p>
+              <p class="stat-value">18K+</p>
+              <p class="stat-copy">AI-powered insights delivered to farmers.</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Disease accuracy</p>
+              <p class="stat-value">95%</p>
+              <p class="stat-copy">Models tuned for local banana varieties.</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Marketplace partners</p>
+              <p class="stat-value">120+</p>
+              <p class="stat-copy">Growers & suppliers sharing essentials.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell light" id="services">
+      <div class="section-intro">
+        <p class="eyebrow">What we offer</p>
+        <h2 class="section-title" id="servicesTitle">Our Services</h2>
+        <p class="section-description">
+          Tools that help you act quickly—from early disease warnings to variety-specific care plans and a trusted farm marketplace.
+        </p>
+      </div>
+
+      <div class="services-grid">
+        <article class="service-card">
+          <img src="{% static 'img/Disease.gif' %}" alt="Banana disease detection animation" class="service-icon">
+          <h3 class="service-title" id="service1">Banana Disease Detection</h3>
+          <p class="service-description" id="ser-dep1">
+            Quickly identify common banana diseases and get treatment recommendations with our advanced scanning technology.
+          </p>
+        </article>
+
+        <article class="service-card">
+          <img src="{% static 'img/Variety.gif' %}" alt="Banana variety identification animation" class="service-icon">
+          <h3 class="service-title" id="service2">Banana Variety Identification</h3>
+          <p class="service-description" id="ser-dep2">
+            Discover the exact variety of your banana plants and learn about their unique characteristics and care requirements.
+          </p>
+        </article>
+
+        <article class="service-card">
+          <img src="{% static 'img/Store.gif' %}" alt="Marketplace animation" class="service-icon">
+          <h3 class="service-title" id="service3">Marketplace</h3>
+          <p class="service-description" id="ser-dep3">
+            Buy and sell high-quality banana seedlings, fertilizers, and farm-ready equipment in our dedicated marketplace.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell soft" id="team">
+      <div class="section-intro">
+        <p class="eyebrow">Community first</p>
+        <h2 class="section-title" id="teamTitle">Meet The Team</h2>
+        <p class="section-description">
+          A multidisciplinary crew of local innovators building tech farmers actually need.
+        </p>
+      </div>
+
+      <div class="team-grid">
+        <article class="team-card">
+          <img src="{% static 'img/sy.png' %}" alt="Syren D. Calibo" class="team-img">
+          <h3 class="team-name">Syren D. Calibo</h3>
+          <p class="team-role">Project Leader & Developer</p>
+        </article>
+
+        <article class="team-card">
+          <img src="{% static 'img/jim.png' %}" alt="Jimmilyn H. Pascua" class="team-img">
+          <h3 class="team-name">Jimmilyn H. Pascua</h3>
+          <p class="team-role">UI/UX Designer</p>
+        </article>
+
+        <article class="team-card">
+          <img src="{% static 'img/mar.png' %}" alt="Mary Rose U. Pardilla" class="team-img">
+          <h3 class="team-name">Mary Rose U. Pardilla</h3>
+          <p class="team-role">Database Specialist</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <h3 class="footer-title" id="footerAboutTitle">About Us</h3>
+        <p class="footer-about" id="footerAboutDesc">
+          BANAe-SCAN is committed to empowering local banana farmers with smart tools for disease detection and online marketing, fostering better harvests and market connections.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-link" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="footer-title" id="footerQuickLinks">Quick Links</h3>
+        <ul class="footer-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#team">Team</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+          <li><a href="#">Help</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h3 class="footer-title" id="footerContact">Contact Us</h3>
+        <p><i class="fas fa-map-marker-alt"></i> Socorro, Oriental Mindoro</p>
+        <p><i class="fas fa-phone"></i> 0912-345-6789</p>
+        <p><i class="fas fa-phone"></i> 0934-567-8901</p>
+        <p><i class="fas fa-envelope"></i> banaescan@gmail.com</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Copyright &copy; BANAe-SCAN system 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    const NAV_BREAKPOINT = 992;
+    const burger = document.getElementById('burger');
+    const navMenu = document.getElementById('navMenu');
+    const languageSelect = document.getElementById('languageSelect');
+
+    const closeNavigation = () => {
+      navMenu.classList.remove('active');
+      burger.classList.remove('active');
+      burger.setAttribute('aria-expanded', 'false');
+    };
+
+    const toggleNavigation = () => {
+      const isOpen = navMenu.classList.toggle('active');
+      burger.classList.toggle('active', isOpen);
+      burger.setAttribute('aria-expanded', String(isOpen));
+    };
+
+    burger.addEventListener('click', toggleNavigation);
+
+    document.addEventListener('click', (event) => {
+      if (!navMenu.contains(event.target) && !burger.contains(event.target)) {
+        closeNavigation();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > NAV_BREAKPOINT) {
+        closeNavigation();
+      }
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', (event) => {
+        const targetSelector = anchor.getAttribute('href');
+        if (targetSelector && targetSelector.length > 1) {
+          event.preventDefault();
+          const target = document.querySelector(targetSelector);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+
+        if (window.innerWidth <= NAV_BREAKPOINT) {
+          closeNavigation();
+        }
+      });
+    });
+
+    const translations = {
+      en: {
+        navAbout: "About",
+        navServices: "Services",
+        navTeam: "Team",
+        welcomeTitle: "Welcome to BANAe-SCAN: Smart Farming Made Simple! 🌱📸",
+        welcomeDesc: "Your all-in-one platform for detecting banana diseases and identifying different varieties! Simply scan your banana plant to diagnose diseases and discover its type. Plus, explore our store to purchase high-quality banana-related products, ensuring healthier crops and better harvests.",
+        servicesTitle: "Our Services",
+        service1: "Banana Disease Detection",
+        "ser-dep1": "Quickly identify common banana diseases and get treatment recommendations with advanced scanning technology.",
+        service2: "Banana Variety Identification",
+        "ser-dep2": "Discover the exact variety of your banana plants and learn about their unique characteristics and care requirements.",
+        service3: "Marketplace",
+        "ser-dep3": "Buy and sell high-quality banana seedlings, fertilizers, and farm-ready equipment in our dedicated marketplace.",
+        teamTitle: "Meet The Team",
+        footerAboutTitle: "About Us",
+        footerAboutDesc: "BANAe-SCAN is committed to empowering local banana farmers with smart tools for disease detection and online marketing, fostering better harvests and market connections.",
+        footerQuickLinks: "Quick Links",
+        footerContact: "Contact Us"
+      },
+      ph: {
+        navAbout: "Tungkol",
+        navServices: "Serbisyo",
+        navTeam: "Koponan",
+        welcomeTitle: "Maligayang Pagdating sa BANAe-SCAN: Smart Farming Made Simple! 🌱📸",
+        welcomeDesc: "Ang iyong all-in-one na plataporma para sa pagtukoy ng sakit ng saging at pagkilala ng iba't ibang klase nito! I-scan ang iyong halaman ng saging upang masuri ang mga sakit at matukoy ang uri nito. Tuklasin din ang aming tindahan upang bumili ng de-kalidad na produktong may kinalaman sa saging para sa mas malusog na pananim at masaganang ani.",
+        servicesTitle: "Aming Mga Serbisyo",
+        service1: "Pagtukoy ng Sakit ng Saging",
+        "ser-dep1": "Mabilis na tukuyin ang mga karaniwang sakit ng saging at tumanggap ng rekomendasyon sa paggamot gamit ang aming advanced na teknolohiya.",
+        service2: "Pagkilala ng Uri ng Saging",
+        "ser-dep2": "Alamin ang eksaktong uri ng iyong mga punong saging at tuklasin ang kanilang natatanging katangian at pangangalaga.",
+        service3: "Pamilihan",
+        "ser-dep3": "Bumili at magbenta ng de-kalidad na punla, pataba, at kagamitang pangsaka sa aming dedikadong pamilihan.",
+        teamTitle: "Kilalanin ang Koponan",
+        footerAboutTitle: "Tungkol sa Amin",
+        footerAboutDesc: "Isinusulong ng BANAe-SCAN ang makabagong mga kasangkapan para sa lokal na magsasaka ng saging—mula sa pagsusuri hanggang pagbebenta—para sa mas masaganang ani at merkado.",
+        footerQuickLinks: "Mga Link",
+        footerContact: "Makipag-ugnayan"
+      }
+    };
+
+    const applyLanguage = (lang) => {
+      const copy = translations[lang] || translations.en;
+      Object.entries(copy).forEach(([key, value]) => {
+        const element = document.getElementById(key);
+        if (element) {
+          element.innerText = value;
+        }
+      });
+    };
+
+    function changeLanguage(lang) {
+      applyLanguage(lang);
+      localStorage.setItem("banae-lang", lang);
+    }
+
+    const savedLang = localStorage.getItem("banae-lang") || "en";
+    languageSelect.value = savedLang;
+    applyLanguage(savedLang);
+
+    languageSelect.addEventListener("change", (event) => {
+      changeLanguage(event.target.value);
+    });
+
+    if (window.gsap) {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (!prefersReducedMotion) {
+        gsap.from(".hero-logo", { duration: 1.2, y: -40, opacity: 0, ease: "power3.out" });
+        gsap.from(".hero-title", { duration: 1, y: 30, opacity: 0, delay: 0.2, ease: "power2.out" });
+        gsap.from(".hero-description", { duration: 1, y: 20, opacity: 0, delay: 0.35, stagger: 0.1, ease: "power2.out" });
+        gsap.from(".hero-buttons", { duration: 1, y: 20, opacity: 0, delay: 0.5, ease: "back.out(1.4)" });
+
+        if (window.ScrollTrigger) {
+          gsap.utils.toArray(".service-card, .team-card").forEach((card) => {
+            gsap.from(card, {
+              scrollTrigger: {
+                trigger: card,
+                start: "top 85%",
+                toggleActions: "play none none none"
+              },
+              y: 50,
+              opacity: 0,
+              duration: 0.8,
+              ease: "power2.out"
+            });
+          });
+        }
+      }
+    }
+  </script>
+</body>
+</html>

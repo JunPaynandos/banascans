@@ -1,0 +1,189 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Revenue History</title>
+
+  <!-- ✅ Bootstrap 5 CDN (IMPORTANT if style was not working) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .page-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .page-title {
+      font-weight: 700;
+      color: #212529;
+    }
+
+    .filter-card {
+      background: #f1f3f5;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    table thead {
+      background-color: #212529;
+      color: #ffffff;
+    }
+
+    table tbody tr:hover {
+      background-color: #f1f3f5;
+    }
+
+    .badge-store {
+      background-color: #0d6efd;
+    }
+
+    .amount-positive {
+      color: #198754;
+      font-weight: 600;
+    }
+
+    .amount-admin {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+
+      body {
+        background: white;
+      }
+
+      .page-card {
+        box-shadow: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container py-4">
+
+  <div class="page-card">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="page-title mb-0">📊 Admin Revenue History</h3>
+
+      <div class="no-print">
+        <button onclick="window.print()" class="btn btn-outline-secondary me-2">
+          🖨 Print
+        </button>
+        <a
+          href="{% url 'export_admin_revenue_csv' %}?{{ request.GET.urlencode }}"
+          class="btn btn-success"
+        >
+          ⬇ Export CSV
+        </a>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <form method="get" class="filter-card mb-4 no-print">
+      <div class="row g-3 align-items-end">
+
+        <div class="col-md-4">
+          <label class="form-label">Filter by Month</label>
+          <input
+            type="month"
+            name="month"
+            value="{{ request.GET.month }}"
+            class="form-control"
+          >
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Filter by Store</label>
+          <select name="store" class="form-select">
+            <option value="">All Stores</option>
+            {% for store in stores %}
+              <option value="{{ store.id }}"
+                {% if request.GET.store == store.id|stringformat:"s" %}selected{% endif %}
+              >
+                {{ store.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4 d-flex gap-2">
+          <button class="btn btn-primary w-100">
+            🔍 Apply Filters
+          </button>
+          <a href="{% url 'admin_revenue_logs' %}" class="btn btn-outline-secondary w-100">
+            Reset
+          </a>
+        </div>
+
+      </div>
+    </form>
+
+    <!-- TABLE -->
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Store</th>
+            <th>Order ID</th>
+            <th>Gross Amount (₱)</th>
+            <th>Admin Commission (5%)</th>
+            <th>Net Store Revenue</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.order_date|date:"M d, Y" }}</td>
+            <td>
+              <span class="badge badge-store">
+                {{ order.store.name }}
+              </span>
+            </td>
+            <td>#{{ order.id }}</td>
+            <td>₱{{ order.total_amount|floatformat:2|intcomma }}</td>
+            <td class="amount-admin">
+              - ₱{{ order.admin_commission|floatformat:2|intcomma }}
+            </td>
+            <td class="amount-positive">
+              ₱{{ order.net_store_amount|floatformat:2|intcomma }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-muted py-4">
+              No revenue records found.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
