@@ -52,7 +52,7 @@ from django.core.files.storage import FileSystemStorage
 import io
 import base64
 from PIL import Image as PILImage
-import torch
+# import torch
 # import torchvision.models as models
 # from torchvision import transforms
 from datetime import datetime, timedelta
