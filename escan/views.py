@@ -69,7 +69,7 @@ from django.db.models import Sum, Count, Q , Avg
 from django.contrib.staticfiles import finders  # For finding static files
 from .models import Thread, Message
 from django.db.models import OuterRef, Subquery, Max
-import torch.nn as nn
+# import torch.nn as nn
 # from torchvision import models, transforms
 from .forms import ImageUploadForm
 # import torch.serialization
