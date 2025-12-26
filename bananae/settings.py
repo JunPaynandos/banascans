@@ -287,7 +287,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'escan' / 'static',
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # MEDIA Settings
 MEDIA_URL = 'https://crvtfxinuvycxwgihree.supabase.co/storage/v1/object/public/product-images/'
